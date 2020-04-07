@@ -31,12 +31,14 @@ CALL apoc.periodic.iterate("
         MERGE (ontologyNode)<-[:from_ontology]-(term)
       )
   )
-  FOREACH (paragraph in item.abstract | 
-      CREATE (abstract:Paragraph {
-            text: paragraph.text,
-            section: paragraph.section
-      })
-      FOREACH (json_cite_span in  paragraph.cite_spans |
+  FOREACH (i IN RANGE(0, size(item.abstract)-1) |
+      MERGE (abstract:Paragraph {
+            id: apoc.hashing.fingerprint(item.abstract[i].text),
+            position: i
+      }) ON CREATE
+      SET abstract.text = item.abstract[i].text
+      SET abstract.section = item.abstract[i].section
+      FOREACH (json_cite_span in  item.abstract[i].cite_spans |
           MERGE (citeSpan:CiteSpan {
               start: json_cite_span.start,
               end: json_cite_span.end,
@@ -45,7 +47,7 @@ CALL apoc.periodic.iterate("
           SET citeSpan.ref_id = coalesce(article.id + json_cite_span.ref_id, null)
           MERGE (abstract)-[:contains_citespan]->(citeSpan)
       )
-      FOREACH (json_ref_span in  paragraph.ref_spans |
+      FOREACH (json_ref_span in  item.abstract[i].ref_spans |
           MERGE (refSpan:RefSpan {
               start: json_ref_span.start,
               end: json_ref_span.end,
@@ -54,14 +56,14 @@ CALL apoc.periodic.iterate("
           SET refSpan.ref_id = coalesce(article.id + json_ref_span.ref_id, null)
           MERGE (abstract)-[:contains_refspan]->(refSpan)
       )
-      FOREACH (ontology in  keys(paragraph.termite_hits)  |
-        FOREACH (annotation in  paragraph.termite_hits[ontology]  |
+      FOREACH (ontology in  keys(item.abstract[i].termite_hits)  |
+        FOREACH (annotation in  item.abstract[i].termite_hits[ontology]  |
           FOREACH (i IN RANGE(0, annotation.hit_count-1) |             
             MERGE (term:Term {
                 id: annotation.id
             }) ON CREATE
             SET term.name = annotation.name
-            CREATE (abstract)-[:has_annotations {
+            MERGE (abstract)-[:has_annotations {
               hit_sentences: annotation.hit_sentences[i],
               hit_sentence_start: annotation.hit_sentence_locations[i][0],
               hit_sentence_end: annotation.hit_sentence_locations[i][1]
@@ -73,14 +75,16 @@ CALL apoc.periodic.iterate("
           )
         )
       )         
-      CREATE (article)-[:has_abstract]->(abstract)
+      MERGE (article)-[:has_abstract]->(abstract)
   )
-  FOREACH (paragraph in item.body_text | 
-      CREATE (bodytext:Paragraph {
-            text: paragraph.text,
-            section: paragraph.section
-      })
-      FOREACH (json_cite_span in  paragraph.cite_spans |
+FOREACH (i IN RANGE(0, size(item.body_text)-1) | 
+      MERGE (bodytext:Paragraph {
+            id: apoc.hashing.fingerprint(item.body_text[i].text),
+            position: i
+      }) ON CREATE
+      SET bodytext.text = item.body_text[i].text
+      SET bodytext.section = item.body_text[i].section
+      FOREACH (json_cite_span in  item.body_text[i].cite_spans |
           MERGE (citeSpan:CiteSpan {
               start: json_cite_span.start,
               end: json_cite_span.end,
@@ -89,7 +93,7 @@ CALL apoc.periodic.iterate("
           SET citeSpan.ref_id = coalesce(article.id + json_cite_span.ref_id, null)
           MERGE (bodytext)-[:contains_citespan]->(citeSpan)
       )
-      FOREACH (json_ref_span in  paragraph.ref_spans |
+      FOREACH (json_ref_span in  item.body_text[i].ref_spans |
           MERGE (refSpan:RefSpan {
               start: json_ref_span.start,
               end: json_ref_span.end,
@@ -98,14 +102,14 @@ CALL apoc.periodic.iterate("
           SET refSpan.ref_id = coalesce(article.id + json_ref_span.ref_id, null)
           MERGE (bodytext)-[:contains_refspan]->(refSpan)
       )
-      FOREACH (ontology in  keys(paragraph.termite_hits)  |
-        FOREACH (annotation in  paragraph.termite_hits[ontology]  |
+      FOREACH (ontology in  keys(item.body_text[i].termite_hits)  |
+        FOREACH (annotation in  item.body_text[i].termite_hits[ontology]  |
           FOREACH (i IN RANGE(0, annotation.hit_count-1) |             
             MERGE (term:Term {
                 id: annotation.id
             }) ON CREATE
             SET term.name = annotation.name
-            CREATE (bodytext)-[:has_annotations {
+            MERGE (bodytext)-[:has_annotations {
               hit_sentences: annotation.hit_sentences[i],
               hit_sentence_start: annotation.hit_sentence_locations[i][0],
               hit_sentence_end: annotation.hit_sentence_locations[i][1]
@@ -163,12 +167,14 @@ CALL apoc.periodic.iterate("
         MERGE (article)-[:has_refentry]->(refEntry)
     )
   )
-  FOREACH (paragraph in item.back_matter | 
+  FOREACH (i IN RANGE(0, size(item.back_matter)-1) |
       MERGE (back_matter:Paragraph {
-            text: paragraph.text,
-            section: paragraph.section
-      })
-      FOREACH (json_cite_span in  paragraph.cite_spans |
+            id: apoc.hashing.fingerprint(item.back_matter[i].text),
+            position: i
+      }) ON CREATE
+      SET back_matter.text = item.back_matter[i].text
+      SET back_matter.section = item.back_matter[i].section
+      FOREACH (json_cite_span in  item.back_matter[i].cite_spans |
           MERGE (citeSpan:CiteSpan {
               start: json_cite_span.start,
               end: json_cite_span.end,
@@ -177,7 +183,7 @@ CALL apoc.periodic.iterate("
           SET citeSpan.ref_id = coalesce(article.id + json_cite_span.ref_id, null)
           MERGE (back_matter)-[:contains_citespan]->(citeSpan)
       )
-      FOREACH (json_ref_span in  paragraph.ref_spans |
+      FOREACH (json_ref_span in  item.back_matter[i].ref_spans |
           MERGE (refSpan:RefSpan {
               start: json_ref_span.start,
               end: json_ref_span.end,
