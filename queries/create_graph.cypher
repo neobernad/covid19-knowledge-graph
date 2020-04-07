@@ -1,16 +1,16 @@
 CALL apoc.periodic.iterate("
-  CALL apoc.load.json('2000_article.json') YIELD value
+  CALL apoc.load.json('300_article.json') YIELD value
   RETURN value
 ","
   UNWIND value as item
-  MERGE(article:Article {id: item.paper_id})
+  MERGE (article:Article {id: item.paper_id})
       SET article.title = item.metadata.title
       SET article.license = item.metadata.license
   FOREACH (json_author in item.metadata.authors |
       MERGE (author:Author {first: json_author.first,
           middle: json_author.middle, last: json_author.last, suffix: json_author.suffix}) ON CREATE
           SET author.email = json_author.email
-      CREATE (article)-[:has_author]->(author)
+      MERGE (article)-[:has_author]->(author)
   )
   WITH item, article
   UNWIND keys(item.metadata.termite_hits) as ontology
@@ -43,7 +43,7 @@ CALL apoc.periodic.iterate("
               text: json_cite_span.text
           }) ON CREATE
           SET citeSpan.ref_id = coalesce(article.id + json_cite_span.ref_id, null)
-          CREATE (abstract)-[:constains_citespan]->(citeSpan)
+          MERGE (abstract)-[:contains_citespan]->(citeSpan)
       )
       FOREACH (json_ref_span in  paragraph.ref_spans |
           MERGE (refSpan:RefSpan {
@@ -52,7 +52,7 @@ CALL apoc.periodic.iterate("
               text: json_ref_span.text
           }) ON CREATE
           SET refSpan.ref_id = coalesce(article.id + json_ref_span.ref_id, null)
-          CREATE (abstract)-[:constains_refspan]->(refSpan)
+          MERGE (abstract)-[:contains_refspan]->(refSpan)
       )
       FOREACH (ontology in  keys(paragraph.termite_hits)  |
         FOREACH (annotation in  paragraph.termite_hits[ontology]  |
@@ -87,7 +87,7 @@ CALL apoc.periodic.iterate("
               text: json_cite_span.text
           }) ON CREATE
           SET citeSpan.ref_id = coalesce(article.id + json_cite_span.ref_id, null)
-          CREATE (bodytext)-[:constains_citespan]->(citeSpan)
+          MERGE (bodytext)-[:contains_citespan]->(citeSpan)
       )
       FOREACH (json_ref_span in  paragraph.ref_spans |
           MERGE (refSpan:RefSpan {
@@ -96,7 +96,7 @@ CALL apoc.periodic.iterate("
               text: json_ref_span.text
           }) ON CREATE
           SET refSpan.ref_id = coalesce(article.id + json_ref_span.ref_id, null)
-          CREATE (bodytext)-[:constains_refspan]->(refSpan)
+          MERGE (bodytext)-[:contains_refspan]->(refSpan)
       )
       FOREACH (ontology in  keys(paragraph.termite_hits)  |
         FOREACH (annotation in  paragraph.termite_hits[ontology]  |
@@ -117,7 +117,7 @@ CALL apoc.periodic.iterate("
           )
         )
       )         
-      CREATE (article)-[:has_bodytext]->(bodytext)
+      MERGE (article)-[:has_bodytext]->(bodytext)
   )
   FOREACH (bibEntryKey in keys(item.bib_entries) |
     FOREACH (jsonEntry in item.bib_entries[bibEntryKey] |
@@ -130,7 +130,7 @@ CALL apoc.periodic.iterate("
         }) ON CREATE
         SET bibEntry.year = coalesce(jsonEntry.year, null)
         SET bibEntry.id = coalesce(article.id + bibEntryKey, null)
-        CREATE (article)-[:has_bibentry]->(bibEntry)
+        MERGE (article)-[:has_bibentry]->(bibEntry)
         FOREACH ( json_author in jsonEntry.authors |
           MERGE (author:Author {
             first: json_author.first,
@@ -138,7 +138,7 @@ CALL apoc.periodic.iterate("
             last: json_author.last, 
             suffix: json_author.suffix})
             //TODO: SET author.affiliation = json_author.affiliation
-          CREATE (bibEntry)-[:has_author]->(author)
+          MERGE (bibEntry)-[:has_author]->(author)
         )
         FOREACH (other_ids_key in keys(jsonEntry.other_ids) |
           FOREACH( other_ids_json in jsonEntry.other_ids[other_ids_key] |
@@ -146,7 +146,7 @@ CALL apoc.periodic.iterate("
               MERGE (reference : DOI {
                 id : other_ids_entry
               })
-              CREATE (reference)-[:has_reference]->(bibEntry)
+              MERGE (reference)-[:has_reference]->(bibEntry)
             )
           )
         )
@@ -160,7 +160,7 @@ CALL apoc.periodic.iterate("
           type : jsonEntry.type
         }) ON CREATE
         SET refEntry.latex = coalesce(jsonEntry.latex, null)
-        CREATE (article)-[:has_refentry]->(refEntry)
+        MERGE (article)-[:has_refentry]->(refEntry)
     )
   )
   FOREACH (paragraph in item.back_matter | 
@@ -175,7 +175,7 @@ CALL apoc.periodic.iterate("
               text: json_cite_span.text
           }) ON CREATE
           SET citeSpan.ref_id = coalesce(article.id + json_cite_span.ref_id, null)
-          CREATE (back_matter)-[:constains_citespan]->(citeSpan)
+          MERGE (back_matter)-[:contains_citespan]->(citeSpan)
       )
       FOREACH (json_ref_span in  paragraph.ref_spans |
           MERGE (refSpan:RefSpan {
@@ -184,20 +184,20 @@ CALL apoc.periodic.iterate("
               text: json_ref_span.text
           }) ON CREATE
           SET refSpan.ref_id = coalesce(article.id + json_ref_span.ref_id, null)
-          CREATE (back_matter)-[:constains_refspan]->(refSpan)
+          MERGE (back_matter)-[:contains_refspan]->(refSpan)
       )
-      CREATE (article)-[:has_back_matter]->(back_matter)
+      MERGE (article)-[:has_back_matter]->(back_matter)
   )
   WITH article
   MATCH(citeSpan:CiteSpan)
   WHERE citeSpan.ref_id IS NOT NULL
   WITH article, citeSpan
   MATCH (bibEntry:BibEntry {id: citeSpan.ref_id})
-  CREATE (citeSpan)-[:has_bibentry]->(bibEntry)
+  MERGE (citeSpan)-[:has_bibentry]->(bibEntry)
   WITH article
   MATCH(refSpan:RefSpan)
   WHERE refSpan.ref_id IS NOT NULL
   WITH refSpan
   MATCH (refEntry:RefEntry {id: refSpan.ref_id})
-  CREATE (refSpan)-[:has_refentry]->(refEntry)
-",{batchSize: 25, iterateList: true, parallel:false, concurrency:5});
+  MERGE (refSpan)-[:has_refentry]->(refEntry)
+",{batchSize: 5, iterateList: true, parallel:false, concurrency:5});
