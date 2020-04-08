@@ -8,6 +8,8 @@ Our work is part of the [Knowledge Graph](https://github.com/virtual-biohackatho
 
 * [Mapping the JSON schema into LPG](#mapping-the-json-schema-into-lpg)
 * [Node properties](#node-properties)
+* [Edges properties](#edges-properties)
+* [Cypher queries](#cypher-queries)
 
 # Mapping the JSON schema into LPG
 
@@ -79,4 +81,6 @@ Each edge has the following properties ([edges_properties.csv](model/edges_prope
 |:`has_refentry`            |null              |null         |false    |
 |:`has_back_matter`         |null              |null         |false    |
 |:`has_reference`           |null              |null         |false    |
+
+# Cypher queries
 
