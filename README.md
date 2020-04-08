@@ -84,3 +84,40 @@ Each edge has the following properties ([edges_properties.csv](model/edges_prope
 
 # Cypher queries
 
+Retrieve relevant terms for a specific input, e.g. as typeahead
+
+```cypher
+CALL db.index.fulltext.queryNodes('termIndex', '<Input>~')
+YIELD node, score
+RETURN node ORDER BY score DESC SKIP <PAGE> LIMIT <PAGE_SIZE>;
+```
+
+![Example for querying Terms](queries/queryTerms.PNG)
+
+Fetch articles and their abstracts annotated with a specific term
+```cypher
+Match (t:Term {id:"<TermID>"})<-[*..2]-(a:Article)
+WITH a
+MATCH (a)-[:has_abstract]->(abstract:Paragraph)
+RETURN a, abstract SKIP <PAGE> LIMIT <PAGE_SIZE>;
+```
+
+![Example retrieving an article for a term](queries/retrieveArticle.PNG)
+
+Retrieve all terms appearing in an article
+
+````cypher
+Match (t:Term)<-[r:has_annotations]-(p:Paragraph)<-[*..1]-(a:Article {id:"<ArticleID>"}
+RETURN t  SKIP <PAGE> LIMIT <PAGE_SIZE>;
+```
+![Example retrieving all terms for an article](queries/getTermsforArticles.PNG)
+
+
+Retrieve the context of the annotation.
+```cypher
+Match (t:Term {id:"<TermID>"})<-[r:has_annotations]-(p:Paragraph)<-[*..2]-(a:Article {id:"<ArticleID>"})
+RETURN t, p, COLLECT(r) as spans ORDER BY p.position ASC SKIP <PAGE> LIMIT <PAGE_SIZE>;
+```
+
+![Example retrieving the context of an annotation](queries/getSpansforTermandArticle.PNG)
+
