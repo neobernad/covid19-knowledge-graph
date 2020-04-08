@@ -4,6 +4,11 @@ This project takes the dataset from [CORD19](https://github.com/SciBiteLabs/CORD
 
 Our work is part of the [Knowledge Graph](https://github.com/virtual-biohackathons/covid-19-bh20/wiki/KnowledgeGraph) task for the virtual [COVID-19 Biohackathon](https://github.com/virtual-biohackathons/covid-19-bh20).
 
+# TOC
+
+* [Mapping the JSON schema into LPG](#mapping-the-json-schema-into-lpg)
+* [Node properties](#node-properties)
+
 # Mapping the JSON schema into LPG
 
 The dataset JSON schema is the [following](https://ai2-semanticscholar-cord-19.s3-us-west-2.amazonaws.com/2020-03-13/json_schema.txt).
@@ -74,3 +79,4 @@ Each edge has the following properties ([edges_properties.csv](model/edges_prope
 |:`has_refentry`            |null              |null         |false    |
 |:`has_back_matter`         |null              |null         |false    |
 |:`has_reference`           |null              |null         |false    |
+
