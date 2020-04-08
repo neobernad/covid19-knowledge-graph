@@ -106,10 +106,11 @@ RETURN a, abstract SKIP <PAGE> LIMIT <PAGE_SIZE>;
 
 Retrieve all terms appearing in an article
 
-````cypher
+```cypher
 Match (t:Term)<-[r:has_annotations]-(p:Paragraph)<-[*..1]-(a:Article {id:"<ArticleID>"}
 RETURN t  SKIP <PAGE> LIMIT <PAGE_SIZE>;
 ```
+
 ![Example retrieving all terms for an article](queries/getTermsforArticles.PNG)
 
 
