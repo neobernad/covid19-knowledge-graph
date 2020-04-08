@@ -1,0 +1,17 @@
+﻿relType,propertyName,propertyTypes,mandatory
+:`has_author`,null,null,false
+:`has_metadata_annotations`,hit_sentence_start,[Long],true
+:`has_metadata_annotations`,hit_sentence_end,[Long],true
+:`has_metadata_annotations`,hit_sentences,[Long],true
+:`from_ontology`,null,null,false
+:`has_annotations`,hit_sentence_start,[Long],true
+:`has_annotations`,hit_sentence_end,[Long],true
+:`has_annotations`,hit_sentences,[Long],true
+:`has_abstract`,null,null,false
+:`has_bodytext`,null,null,false
+:`contains_citespan`,null,null,false
+:`contains_refspan`,null,null,false
+:`has_bibentry`,null,null,false
+:`has_refentry`,null,null,false
+:`has_back_matter`,null,null,false
+:`has_reference`,null,null,false
