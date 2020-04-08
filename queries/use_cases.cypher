@@ -11,6 +11,7 @@ RETURN node ORDER BY score DESC LIMIT 10
 //>> Create index for article id, to retrieve the articles.
 
 CREATE INDEX articleId FOR (n:Article) ON (n.id)
+CREATE INDEX termId FOR (n:Term) ON (n.id)
 
 //>> Find articles depending on Term ID
 Match (t:Term {id:"https://id.nlm.nih.gov/mesh/D010944"})<-[*..1]-(a:Article {id: "3b8d7417f616e8ba9912423e9b764870d8e2e047"})
