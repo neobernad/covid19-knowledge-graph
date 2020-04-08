@@ -84,7 +84,7 @@ Each edge has the following properties ([edges_properties.csv](model/edges_prope
 
 # Cypher queries
 
-Retrieve relevant terms for a specific input, e.g. as typeahead
+Retrieve relevant terms for a specific input, e.g. as typeahead.
 
 ```cypher
 CALL db.index.fulltext.queryNodes('termIndex', '<Input>~')
@@ -94,7 +94,7 @@ RETURN node ORDER BY score DESC SKIP <PAGE> LIMIT <PAGE_SIZE>;
 
 ![Example for querying Terms](queries/queryTerms.PNG)
 
-Fetch articles and their abstracts annotated with a specific term
+Fetch articles and their abstracts annotated with a specific term.
 ```cypher
 Match (t:Term {id:"<TermID>"})<-[*..2]-(a:Article)
 WITH a
@@ -104,7 +104,7 @@ RETURN a, abstract SKIP <PAGE> LIMIT <PAGE_SIZE>;
 
 ![Example retrieving an article for a term](queries/retrieveArticle.PNG)
 
-Retrieve all terms appearing in an article
+Retrieve all terms appearing in an article.
 
 ```cypher
 Match (t:Term)<-[r:has_annotations]-(p:Paragraph)<-[*..2]-(a:Article {id:"<ArticleID>"})
