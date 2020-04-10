@@ -122,3 +122,25 @@ RETURN t, p, COLLECT(r) as spans ORDER BY p.position ASC SKIP <PAGE> LIMIT <PAGE
 
 ![Example retrieving the context of an annotation](queries/getSpansforTermandArticle.PNG)
 
+
+
+Retrieve the article title, authors, abstract, bodytext, backmatter and bibliography.
+
+```cypher
+MATCH (article:Article {id:"<ArticleID>"})
+WITH article
+MATCH (author:Author)<-[:has_author]-(article)
+WITH article, COLLECT(author) as authors
+MATCH (abstract:Paragraph)<-[:has_abstract]-(article)
+WITH article, authors, COLLECT(abstract) as abstracts
+MATCH (bodytext:Paragraph)<-[:has_bodytext]-(article)
+WITH article, authors, abstracts, bodytext
+ORDER BY bodytext.position ASC
+WITH article, authors, abstracts, COLLECT(bodytext) as bodytexts
+MATCH (backmatter:Paragraph)<-[:has_back_matter]-(article)
+WITH article, authors, abstracts, bodytexts, COLLECT(backmatter) as backmatters
+MATCH (bibEntry:BibEntry)<-[:has_bibentry]-(article)
+RETURN article, authors, abstracts, bodytexts, backmatters, COLLECT(bibEntry) as bibEntries
+```
+
+![Example retrieving the information from an article](queries/retrieveArticleInformation.png)
