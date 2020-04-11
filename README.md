@@ -1,6 +1,6 @@
 # COVID19 Knowledge graph
 
-This project takes the annotated dataset from [CORD19](https://github.com/SciBiteLabs/CORD19) project. Original dataset CORD19 dataset is found in this ([website](https://pages.semanticscholar.org/coronavirus-research)).
+This project takes the annotated dataset from [CORD19](https://github.com/SciBiteLabs/CORD19) project. Original (non-annotated) dataset CORD19 is found in this ([website](https://pages.semanticscholar.org/coronavirus-research)).
 
 Our work is part of the [Knowledge Graph](https://github.com/virtual-biohackathons/covid-19-bh20/wiki/KnowledgeGraph) task for the virtual [COVID-19 Biohackathon](https://github.com/virtual-biohackathons/covid-19-bh20).
 
