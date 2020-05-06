@@ -84,7 +84,7 @@ Each edge has the following properties ([edges_properties.csv](model/edges_prope
 
 # Cypher queries
 
-Retrieve relevant terms for a specific input, e.g. as typeahead.
+## Retrieve relevant terms for a specific input, e.g. as typeahead.
 
 ```cypher
 CALL db.index.fulltext.queryNodes('termIndex', '<Input>~')
@@ -94,7 +94,7 @@ RETURN node ORDER BY score DESC SKIP <PAGE> LIMIT <PAGE_SIZE>;
 
 ![Example for querying Terms](queries/queryTerms.PNG)
 
-Fetch articles and their abstracts annotated with a specific term.
+## Fetch articles and their abstracts annotated with a specific term.
 ```cypher
 Match (t:Term {id:"<TermID>"})<-[*..2]-(a:Article)
 WITH a
@@ -104,7 +104,7 @@ RETURN a, abstract SKIP <PAGE> LIMIT <PAGE_SIZE>;
 
 ![Example retrieving an article for a term](queries/retrieveArticle.PNG)
 
-Retrieve all terms appearing in an article.
+## Retrieve all terms appearing in an article.
 
 ```cypher
 Match (t:Term)<-[r:has_annotations]-(p:Paragraph)<-[*..2]-(a:Article {id:"<ArticleID>"})
@@ -114,7 +114,7 @@ RETURN t  SKIP <PAGE> LIMIT <PAGE_SIZE>;
 ![Example retrieving all terms for an article](queries/getTermsforArticles.PNG)
 
 
-Retrieve the context of the annotation.
+## Retrieve the context of the annotation.
 ```cypher
 Match (t:Term {id:"<TermID>"})<-[r:has_annotations]-(p:Paragraph)<-[*..2]-(a:Article {id:"<ArticleID>"})
 RETURN t, p, COLLECT(r) as spans ORDER BY p.position ASC SKIP <PAGE> LIMIT <PAGE_SIZE>;
@@ -124,7 +124,7 @@ RETURN t, p, COLLECT(r) as spans ORDER BY p.position ASC SKIP <PAGE> LIMIT <PAGE
 
 
 
-Retrieve the article title, authors, abstract, bodytext, backmatter and bibliography.
+## Retrieve the article title, authors, abstract, bodytext, backmatter and bibliography.
 
 ```cypher
 MATCH (article:Article {id:"<ArticleID>"})
@@ -144,3 +144,21 @@ RETURN article, authors, abstracts, bodytexts, backmatters, COLLECT(bibEntry) as
 ```
 
 ![Example retrieving the information from an article](queries/retrieveArticleInformation.png)
+
+## Retrieve query preview: article count and terms related to an input term list.
+```cypher
+Match (t:Term)<-[*..2]-(a:Article)
+WHERE (t.id IN ["<TermID1>", "<TermID2>"])
+WITH a, COUNT(a) as articleCount
+MATCH (a)-[:has_metadata_annotations]->(annotation:Term)-[:from_ontology]->(o:Ontology)
+RETURN sum(articleCount) as totalArticles, o as ontology, collect(distinct(annotation)) as annotations
+```
+The latter query the article count is divided by the ontology: X articles from Y ontology with Z annotations.
+If the ontology is not necessary, you can omit `o as ontology`, so that the output is: X total articles appearing the Z annotations found.
+```cypher
+Match (t:Term)<-[*..2]-(a:Article)
+WHERE (t.id IN ["<TermID1>", "<TermID2>"])
+WITH a, COUNT(a) as articleCount
+MATCH (a)-[:has_metadata_annotations]->(annotation:Term)
+RETURN sum(articleCount) as totalArticles, collect(distinct(annotation)) as annotations
+```
